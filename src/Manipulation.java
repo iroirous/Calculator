@@ -28,16 +28,29 @@ public class Manipulation {
         associativity.put("minus", "leftonly"); // 負数を表す
     }
 
-    // 与えた文字列を計算する
+    // 与えた文字列を計算する（第二引数省略版）
     public String calculate(String str){
-        System.out.print("入力数式：");
-        System.out.println(str);
+        return calculate(str, false);
+    }
+
+    // 与えた文字列を計算する
+    public String calculate(String str, boolean showDebug){
+        if(showDebug) {
+            System.out.print("入力数式：");
+            System.out.println(str);
+        }
         ArrayList<String> token = generateToken(str);
-        System.out.print("トークン：");
-        printArray(token);
+
+        if(showDebug) {
+            System.out.print("トークン：");
+            printArray(token);
+        }
         ArrayList<String> rpn = shuntingYard(token);
-        System.out.print("逆ポーランド記法：");
-        printArray(rpn);
+
+        if(showDebug) {
+            System.out.print("逆ポーランド記法：");
+            printArray(rpn);
+        }
         Polynomial poly = calculate(rpn).beautify();
 
         return poly.toString();
