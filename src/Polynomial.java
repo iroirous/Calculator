@@ -50,8 +50,57 @@ public class Polynomial implements Cloneable{
         for(Term term : terms){
             term.beautify();
         }
+
+        // コムソートによりソートする。計算時間はほぼO(nlogn)
+        if(terms.size() > 1){
+            int h = terms.size() * 10 / 13;
+            Term a, b;
+            char aVar, bVar;
+            int aExp, bExp;
+            while(true){
+                for(int i = 0; i + h < terms.size(); i++) {
+                    a = terms.get(i);
+                    b = terms.get(i + h);
+
+                    // 先頭の変数を調べる
+                    if(a.hasVariable()){
+                        aVar = a.getVariable(0).getVariable();
+                    } else {
+                        aVar = 127;   // 定数項のときはDEL文字を代入
+                    }
+                    if(b.hasVariable()){
+                        bVar = b.getVariable(0).getVariable();
+                    } else {
+                        bVar = 127;
+                    }
+
+                    if (aVar > bVar) {
+                        Term tmp = b;
+                        terms.set(i + h, a);
+                        terms.set(i, tmp);
+                    } else if(aVar == bVar) {
+                        // 同じ変数の場合、指数の大きな順に並べる（降べきの順）
+                        aExp = a.getVariable(0).getExponent();
+                        bExp = b.getVariable(0).getExponent();
+
+                        if(aExp < bExp){
+                            Term tmp = b;
+                            terms.set(i + h, a);
+                            terms.set(i, tmp);
+                        }
+                    }
+                }
+                if(h == 1){
+                    break;
+                } else {
+                    h = h * 10 / 13;
+                }
+            }
+        }
+
         return this;
     }
+
 
     // 文字列化
     @Override
