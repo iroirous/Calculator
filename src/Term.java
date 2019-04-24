@@ -3,7 +3,8 @@ import java.util.ArrayList;
 public class Term implements Cloneable{
     private int denominator;    // 分母
     private int numerator;      // 分子
-    private ArrayList<Object[]> variable = new ArrayList<>();   // 変数を格納する二次元配列
+    // private ArrayList<Object[]> variable = new ArrayList<>();   // 変数を格納する二次元配列
+    private ArrayList<Variable> variables = new ArrayList<>();
 
     Term(int nume, int denom){
         numerator = nume;
@@ -15,15 +16,15 @@ public class Term implements Cloneable{
         denominator = 1;
     }
 
-    Term(int nume, int denom, ArrayList<Object[]> var){
+    Term(int nume, int denom, ArrayList<Variable> var){
         numerator = nume;
         denominator = denom;
-        variable = var;
+        variables = var;
     }
 
     Term(String term){
         StringBuilder tmp = new StringBuilder();
-        String var = "";
+        char var = 0;   // 0はヌル文字
         char c;
 
         // 1文字ずつ取り出す
@@ -34,7 +35,7 @@ public class Term implements Cloneable{
                 // 数字ならばtmpに移動
                 tmp.append(c);
             } else if(Character.isAlphabetic(c)) {
-                if(var.equals("")) {
+                if(var == 0) {
                     // 係数をnumeratorに代入する
                     if (tmp.length() > 0) {
                         numerator = Integer.valueOf(tmp.toString());
@@ -46,27 +47,31 @@ public class Term implements Cloneable{
                 } else {
                     // 既にチェック中の変数があれば、それを追加する
                     if(tmp.length() == 0){
-                        variable.add(new Object[]{var, 1});
+                        // variable.add(new Object[]{var, 1});
+                        variables.add(new Variable(var, 1));
                     } else {
-                        variable.add(new Object[]{var, Integer.valueOf(tmp.toString())});
+                        // variable.add(new Object[]{var, Integer.valueOf(tmp.toString())});
+                        variables.add(new Variable(var, Integer.valueOf(tmp.toString())));
                     }
                     tmp.setLength(0);
                 }
 
                 // 現在チェック中の変数名として格納
-                var = String.valueOf(c);
+                var = c;
             }
         }
 
         // 一時変数に入っている中身を処理
-        if(var.equals("")){
+        if(var == 0){
             numerator = Integer.valueOf(tmp.toString());
         } else {
             // 既にチェック中の変数があれば、それを追加する
             if(tmp.length() == 0){
-                variable.add(new Object[]{var, 1});
+                // variable.add(new Object[]{var, 1});
+                variables.add(new Variable(var, 1));
             } else {
-                variable.add(new Object[]{var, Integer.valueOf(tmp.toString())});
+                // variable.add(new Object[]{var, Integer.valueOf(tmp.toString())});
+                variables.add(new Variable(var, Integer.valueOf(tmp.toString())));
             }
         }
 
@@ -87,36 +92,38 @@ public class Term implements Cloneable{
         numerator = i;
     }
 
-    public void setVariable(ArrayList<Object[]> var){
-        variable = var;
+    public void setVariable(ArrayList<Variable> var){
+        variables = var;
     }
 
     // 0乗の変数を削除する
     private void shortify() {
         // 0乗の変数を削除する
-        ArrayList<Object[]> shortified = new ArrayList<>();
-        for (Object[] obj : variable) {
-            if ((int) obj[1] != 0)
+        ArrayList<Variable> shortified = new ArrayList<>();
+        for (Variable obj : variables) {
+            if (obj.getExponent() != 0)
                 shortified.add(obj);
         }
-        variable = shortified;
+        variables = shortified;
     }
 
     // 変数を並び替える
     private void sortVariables(){
         // コムソートによりソートする。計算時間はほぼO(nlogn)
-        if(variable.size() > 1) {
-            int h = variable.size() * 10 / 13;
-            String a, b;
+        if(variables.size() > 1) {
+            int h = variables.size() * 10 / 13;
+            char a, b;
             while (true) {
-                for (int i = 0; i + h < variable.size(); i++) {
-                    a = (String)variable.get(i)[0];
-                    b = (String)variable.get(i+h)[0];
+                for (int i = 0; i + h < variables.size(); i++) {
+                    // a = (String)variable.get(i)[0];
+                    // b = (String)variable.get(i+h)[0];
+                    a = variables.get(i).getVariable();
+                    b = variables.get(i+h).getVariable();
 
-                    if (a.charAt(0) > b.charAt(0)) {
-                        Object[] tmp = variable.get(i + h);
-                        variable.set(i + h, variable.get(i));
-                        variable.set(i, tmp);
+                    if (a > b) {
+                        Variable tmp = variables.get(i + h);
+                        variables.set(i + h, variables.get(i));
+                        variables.set(i, tmp);
                     }
                 }
                 if (h == 1) {
@@ -152,12 +159,12 @@ public class Term implements Cloneable{
 
     // 変数の数を返す
     public int variableSize(){
-        return variable.size();
+        return variables.size();
     }
 
     // 指定番目の変数を取り出す
-    public Object[] getVariable(int num){
-        return variable.get(num);
+    public Variable getVariable(int num){
+        return variables.get(num);
     }
 
     // 最大公約数を求める
@@ -176,16 +183,16 @@ public class Term implements Cloneable{
 
     // 変数を持っているかどうか
     public boolean hasVariable(){
-        return (variable.size() != 0);
+        return (variables.size() != 0);
     }
 
     // 同じ変数を持っているかどうか
     public boolean variableEquals(Term a){
-        if(variable.size() == a.variableSize()){
-            outer : for(Object[] var : variable){
-                for(Object[] avar : a.variable){
+        if(variables.size() == a.variableSize()){
+            outer : for(Variable var : variables){
+                for(Variable avar : a.variables){
                     // 両方の項が同じ変数を持っている場合
-                    if(var[0].equals(avar[0]) && var[1].equals(avar[1])){
+                    if((var.getVariable() == avar.getVariable()) && (var.getExponent() == avar.getExponent())){
                         continue outer;
                     }
                 }
@@ -226,9 +233,9 @@ public class Term implements Cloneable{
             tmp = (Term)super.clone();
 
             // ArrayListのcloneメソッドはシャローコピーしかしてくれないので手作業でディープコピー
-            tmp.variable = new ArrayList<>();
-            for(Object[] obj : this.variable){
-                tmp.variable.add(obj.clone());
+            tmp.variables = new ArrayList<>();
+            for(Variable obj : this.variables){
+                tmp.variables.add(obj.clone());
             }
         } catch(CloneNotSupportedException e){
             e.printStackTrace();
@@ -242,7 +249,7 @@ public class Term implements Cloneable{
         StringBuilder tmp = new StringBuilder();
         boolean flg = false;    // マイナスｎ乗の変数があるか
 
-        if(variable.size() == 0){
+        if(variables.size() == 0){
             tmp.append(numerator);
         } else {
             switch(numerator) {
@@ -265,17 +272,17 @@ public class Term implements Cloneable{
             }
 
             // この項が持つ指数が正の数の変数を順に出力する
-            for(Object[] var : variable) {
-                if ((int) var[1] < 0) {
+            for(Variable var : variables) {
+                if (var.getExponent() < 0) {
                     // マイナスｎ乗の変数があったら分母に出力するためフラグを立てる
                     flg = true;
-                } else if ((int) var[1] != 1) {
+                } else if (var.getExponent() != 1) {
                     // 1乗以外の変数があったら分子に出力する
-                    tmp.append(var[0]);
+                    tmp.append(var.getVariable());
                     tmp.append("^");
-                    tmp.append(var[1]);
+                    tmp.append(var.getExponent());
                 } else {
-                    tmp.append(var[0]);
+                    tmp.append(var.getVariable());
                 }
 
             }
@@ -290,15 +297,15 @@ public class Term implements Cloneable{
             }
 
             if(flg) {
-                for (Object[] var : variable) {
-                    if ((int) var[1] < -1) {
+                for (Variable var : variables) {
+                    if (var.getExponent() < -1) {
                         // マイナスｎ乗の変数を出力
-                        tmp.append(var[0]);
+                        tmp.append(var.getVariable());
                         tmp.append("^");
-                        tmp.append(-(int)var[1]);
-                    } else if ((int) var[1] == -1) {
+                        tmp.append(-var.getExponent());
+                    } else if (var.getExponent() == -1) {
                         // マイナス1乗の変数は単に変数のみ出力
-                        tmp.append(var[0]);
+                        tmp.append(var.getVariable());
                     }
                 }
             }
@@ -315,10 +322,10 @@ public class Term implements Cloneable{
         return numerator;
     }
 
-    public ArrayList<Object[]> getVariable(){
+    public ArrayList<Variable> getVariable(){
         // ArrayListのcloneメソッドはシャローコピーなので手作業でディープコピー
-        ArrayList<Object[]> tmp = new ArrayList<>();
-        for(Object[] obj : variable){
+        ArrayList<Variable> tmp = new ArrayList<>();
+        for(Variable obj : variables){
             tmp.add(obj.clone());
         }
         return tmp;

@@ -90,15 +90,15 @@ public class Calculate {
     private static Term multiplication(Term a, Term b){
         int denominator = a.getDenominator() * b.getDenominator();
         int numerator = a.getNumerator() * b.getNumerator();
-        ArrayList<Object[]> avar = a.getVariable();
+        ArrayList<Variable> avar = a.getVariable();
 
         // 文字の指数を変更する
         outer : for(int i=0; i<b.variableSize(); i++){
-            Object[] btmp = b.getVariable(i);
+            Variable btmp = b.getVariable(i);
             for(int j=0; j<avar.size(); j++){
                 // 同じ変数が見つかれば指数を加算する
-                if(btmp[0].equals(avar.get(j)[0])){
-                    avar.get(j)[1] = (int)btmp[1] + (int)avar.get(j)[1];
+                if(btmp.getVariable() == avar.get(j).getVariable()){
+                    avar.get(j).setExponent(btmp.getExponent() + avar.get(j).getExponent());
                     continue outer;
                 }
             }
@@ -129,22 +129,22 @@ public class Calculate {
     private static Term division(Term a, Term b){
         int denominator = a.getDenominator() * b.getNumerator();
         int numerator = a.getNumerator() * b.getDenominator();
-        ArrayList<Object[]> avar = a.getVariable();
-        Object[] btmp;
+        ArrayList<Variable> avar = a.getVariable();
+        Variable btmp;
 
         outer : for(int i=0; i<b.variableSize(); i++){
             btmp = b.getVariable(i);
             for(int j=0; j<avar.size(); j++){
                 // 同じ変数が見つかれば指数を減算する
-                if(btmp[0].equals(avar.get(j)[0])){
-                    avar.get(j)[1] = (int)avar.get(j)[1] - (int)btmp[1];
+                if(btmp.getVariable() == avar.get(j).getVariable()){
+                    avar.get(j).setExponent(avar.get(j).getExponent() - btmp.getExponent());
                     continue outer;
                 }
             }
 
             // 同じ変数が見つからなければ変数を追加する
             btmp = btmp.clone();
-            btmp[1] = -(int)btmp[1];
+            btmp.setExponent(-btmp.getExponent());
             avar.add(btmp);
         }
 
