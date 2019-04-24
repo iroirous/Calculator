@@ -47,10 +47,8 @@ public class Term implements Cloneable{
                 } else {
                     // 既にチェック中の変数があれば、それを追加する
                     if(tmp.length() == 0){
-                        // variable.add(new Object[]{var, 1});
                         variables.add(new Variable(var, 1));
                     } else {
-                        // variable.add(new Object[]{var, Integer.valueOf(tmp.toString())});
                         variables.add(new Variable(var, Integer.valueOf(tmp.toString())));
                     }
                     tmp.setLength(0);
@@ -67,10 +65,8 @@ public class Term implements Cloneable{
         } else {
             // 既にチェック中の変数があれば、それを追加する
             if(tmp.length() == 0){
-                // variable.add(new Object[]{var, 1});
                 variables.add(new Variable(var, 1));
             } else {
-                // variable.add(new Object[]{var, Integer.valueOf(tmp.toString())});
                 variables.add(new Variable(var, Integer.valueOf(tmp.toString())));
             }
         }
@@ -115,8 +111,6 @@ public class Term implements Cloneable{
             char a, b;
             while (true) {
                 for (int i = 0; i + h < variables.size(); i++) {
-                    // a = (String)variable.get(i)[0];
-                    // b = (String)variable.get(i+h)[0];
                     a = variables.get(i).getVariable();
                     b = variables.get(i+h).getVariable();
 

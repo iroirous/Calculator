@@ -79,7 +79,6 @@ public class Polynomial implements Cloneable{
     // 複製する
     @Override
     public Polynomial clone(){
-        // return new Term(numerator, denominator);
         Polynomial tmp = null;
         try {
             tmp = (Polynomial)super.clone();
