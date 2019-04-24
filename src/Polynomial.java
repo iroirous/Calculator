@@ -54,7 +54,7 @@ public class Polynomial implements Cloneable{
         // コムソートによりソートする。計算時間はほぼO(nlogn)
         if(terms.size() > 1){
             int h = terms.size() * 10 / 13;
-            Term a, b;
+            Term a, b, tmp;
             char aVar, bVar;
             int aExp, bExp;
             while(true){
@@ -75,7 +75,7 @@ public class Polynomial implements Cloneable{
                     }
 
                     if (aVar > bVar) {
-                        Term tmp = b;
+                        tmp = b;
                         terms.set(i + h, a);
                         terms.set(i, tmp);
                     } else if(aVar == bVar) {
@@ -84,7 +84,7 @@ public class Polynomial implements Cloneable{
                         bExp = b.getVariable(0).getExponent();
 
                         if(aExp < bExp){
-                            Term tmp = b;
+                            tmp = b;
                             terms.set(i + h, a);
                             terms.set(i, tmp);
                         }

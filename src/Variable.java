@@ -1,10 +1,12 @@
-public class Variable {
+public class Variable implements Cloneable{
     private char var;
     private int exp;
+    //public static long count = 0;
 
     Variable(char v, int e){
         var = v;
         exp = e;
+        //count++;
     }
 
     public char getVariable(){
@@ -21,6 +23,12 @@ public class Variable {
 
     @Override
     public Variable clone(){
-        return new Variable(var, exp);
+        Variable ret = null;
+        try {
+            ret = (Variable) super.clone();
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        return ret;
     }
 }

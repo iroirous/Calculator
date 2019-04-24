@@ -104,7 +104,7 @@ public class Calculate {
             }
 
             // 同じ変数が見つからなければ変数を追加する
-            avar.add(btmp.clone());
+            avar.add(btmp);
         }
 
         return new Term(numerator, denominator, avar);
@@ -143,7 +143,6 @@ public class Calculate {
             }
 
             // 同じ変数が見つからなければ変数を追加する
-            btmp = btmp.clone();
             btmp.setExponent(-btmp.getExponent());
             avar.add(btmp);
         }
