@@ -1,4 +1,6 @@
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 
 public class Calculate {
     // 項を加算
@@ -169,21 +171,6 @@ public class Calculate {
         }
     }
 
-    // べき乗計算
-    public static Term power(Term a, Term b){
-        if(!b.isInteger()){
-            throw new UnsupportedOperationException("べき乗演算子の右側の項に利用できるのは正の整数のみです");
-        } else {
-            int count = b.getNumerator();
-            Term tmp = a.clone();
-            while(count > 1){
-                tmp = Calculate.multiplication(tmp, a);
-                count--;
-            }
-            return tmp;
-        }
-    }
-
     public static Polynomial power(Polynomial a, Polynomial b){
         // 現状ではbは唯1つの整数項を持つとし、異なる場合は例外をスロー
         if(b.size() == 1 && !b.get(0).hasVariable() && b.get(0).isInteger()){
@@ -248,7 +235,7 @@ public class Calculate {
         }
     }
 
-    // 最大公倍数を求める
+    // 最小公倍数を求める
     private static int lcm(int m, int n){
         return m * n / gcd(m,n);
     }

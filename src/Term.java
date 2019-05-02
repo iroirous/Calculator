@@ -3,7 +3,6 @@ import java.util.ArrayList;
 public class Term implements Cloneable{
     private int denominator;    // 分母
     private int numerator;      // 分子
-    // private ArrayList<Object[]> variable = new ArrayList<>();   // 変数を格納する二次元配列
     private ArrayList<Variable> variables = new ArrayList<>();
 
     Term(int nume, int denom){

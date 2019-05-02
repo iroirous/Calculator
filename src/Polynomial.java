@@ -22,7 +22,6 @@ public class Polynomial implements Cloneable{
     // termsの内容を複製して返す
     public ArrayList<Term> get(){
         return terms;
-        //return (ArrayList<Term>)terms.clone();
     }
 
     // termsの内容のうち指定番目を複製して返す
@@ -100,7 +99,6 @@ public class Polynomial implements Cloneable{
 
         return this;
     }
-
 
     // 文字列化
     @Override

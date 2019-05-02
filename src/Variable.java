@@ -1,12 +1,10 @@
 public class Variable implements Cloneable{
     private char var;
     private int exp;
-    //public static long count = 0;
 
     Variable(char v, int e){
         var = v;
         exp = e;
-        //count++;
     }
 
     public char getVariable(){
