@@ -19,6 +19,10 @@ public class Variable implements Cloneable{
         exp = num;
     }
 
+    public boolean variableEquals(Variable v){
+        return (var == v.getVariable());
+    }
+
     @Override
     public Variable clone(){
         Variable ret = null;

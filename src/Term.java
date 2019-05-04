@@ -1,50 +1,42 @@
 import java.util.ArrayList;
 
 public class Term implements Cloneable{
-    private int denominator;    // 分母
-    private int numerator;      // 分子
+    private int coefficient;
     private ArrayList<Variable> variables = new ArrayList<>();
 
-    Term(int nume, int denom){
-        numerator = nume;
-        denominator = denom;
+    Term(int coe){
+        coefficient = coe;
     }
 
-    Term(int nume){
-        numerator = nume;
-        denominator = 1;
-    }
-
-    Term(int nume, int denom, ArrayList<Variable> var){
-        numerator = nume;
-        denominator = denom;
+    Term(int coe, ArrayList<Variable> var){
+        coefficient = coe;
         variables = var;
     }
 
     Term(String term){
         StringBuilder tmp = new StringBuilder();
-        char var = 0;   // 0はヌル文字
+        char var = 0;
         char c;
 
-        // 1文字ずつ取り出す
+        // 一文字ずつ取り出す
         for(int i=0; i<term.length(); i++){
             c = term.charAt(i);
 
             if(Character.isDigit(c)){
                 // 数字ならばtmpに移動
                 tmp.append(c);
-            } else if(Character.isAlphabetic(c)) {
-                if(var == 0) {
-                    // 係数をnumeratorに代入する
-                    if (tmp.length() > 0) {
-                        numerator = Integer.valueOf(tmp.toString());
+            } else if(Character.isAlphabetic(c)){
+                if(var == 0){
+                    // 係数をcoefficientに代入
+                    if(tmp.length() > 0){
+                        coefficient = Integer.valueOf(tmp.toString());
                         tmp.setLength(0);
                     } else {
-                        // 係数が明示されてなければ係数1とする
-                        numerator = 1;
+                        // 係数が明示されていなければ1とする
+                        coefficient = 1;
                     }
                 } else {
-                    // 既にチェック中の変数があれば、それを追加する
+                    // 既にチェック済みの変数があれば、それを追加する
                     if(tmp.length() == 0){
                         variables.add(new Variable(var, 1));
                     } else {
@@ -60,35 +52,63 @@ public class Term implements Cloneable{
 
         // 一時変数に入っている中身を処理
         if(var == 0){
-            numerator = Integer.valueOf(tmp.toString());
+            coefficient = Integer.valueOf(tmp.toString());
         } else {
-            // 既にチェック中の変数があれば、それを追加する
+            // 既にチェック済みの変数があれば、それを追加する
             if(tmp.length() == 0){
                 variables.add(new Variable(var, 1));
             } else {
                 variables.add(new Variable(var, Integer.valueOf(tmp.toString())));
             }
         }
-
-        denominator = 1;
     }
 
-    // 分子の符号を反転させる
-    public Term inverse(){
-        this.numerator = -this.numerator;
+    // 符号反転
+    public Term signInversion(){
+        coefficient = -coefficient;
         return this;
     }
 
-    public void setDenominator(int i){
-        denominator = i;
+    // 係数取得
+    public int getCoefficient(){
+        return coefficient;
     }
 
-    public void setNumerator(int i){
-        numerator = i;
+    // 係数設定
+    public void setCoefficient(int num){
+        coefficient = num;
     }
 
-    public void setVariable(ArrayList<Variable> var){
-        variables = var;
+    // 乗算
+    public Term multiplication(Term a){
+        int coe = coefficient * a.getCoefficient();
+        ArrayList<Variable> newvar = new ArrayList<>();
+
+        // thisの変数をコピーする
+        for(Variable var : this.variables){
+            newvar.add(var.clone());
+        }
+
+        // aの変数を乗算する
+        outer : for(Variable vara : a.variables){
+            for(Variable varnew : newvar){
+                if(vara.variableEquals(varnew)){
+                    varnew.setExponent(vara.getExponent() + varnew.getExponent());
+                    continue outer;
+                }
+            }
+
+            newvar.add(vara);
+        }
+
+        return new Term(coe, newvar);
+    }
+
+    // 符号を反転させる
+    public Term inverse(){
+        // this.numerator = -this.numerator;
+        this.coefficient = -this.coefficient;
+        return this;
     }
 
     // 0乗の変数を削除する
@@ -128,30 +148,14 @@ public class Term implements Cloneable{
         }
     }
 
-    // 約分を行う
-    private void reduction(){
-        int gcd = gcd(denominator, numerator);
-        numerator = numerator / gcd;
-        denominator = denominator / gcd;
-
-        if(denominator < 0){
-            denominator = -denominator;
-            numerator = -numerator;
-        }
-
-    }
-
-    // Shortify, sortVariables, reductionを全て行う
+    // Shortify, sortVariablesを全て行う
     public void beautify(){
-        if(numerator != 0)
-            reduction();
-
         sortVariables();
         shortify();
     }
 
     // 変数の数を返す
-    public int variableSize(){
+    private int variableSize(){
         return variables.size();
     }
 
@@ -160,18 +164,22 @@ public class Term implements Cloneable{
         return variables.get(num);
     }
 
-    // 最大公約数を求める
-    private static int gcd(int m, int n){
-        if(m % n == 0){
-            return n;
-        } else {
-            return gcd(n, m%n);
+    public Variable getVariable(char c){
+        for(Variable v : variables){
+            if(v.getVariable() == c){
+                return v;
+            }
         }
+        throw new Error("引数に指定された変数が存在しないため、取得できません。");
     }
 
-    // 最大公倍数を求める
-    private static int lcm(int m, int n){
-        return m * n / gcd(m,n);
+    // 指定した変数の指数を書き換える
+    public void setVariableExponent(char c, int exp){
+        for(Variable v : variables){
+            if(v.getVariable() == c){
+                v.setExponent(exp);
+            }
+        }
     }
 
     // 変数を持っているかどうか
@@ -200,22 +208,13 @@ public class Term implements Cloneable{
 
     // この項が整数かどうか
     public boolean isInteger(){
-        return (denominator == 1);
-    }
-
-    // 分子が正数かどうか
-    public boolean isPositive(){
-        return (numerator > 0);
+        // return (denominator == 1);
+        return (variableSize() == 0);
     }
 
     // この項が負数かどうか
     public boolean isNegative(){
-        return (numerator < 0);
-    }
-
-    // 分子がゼロかどうか
-    public boolean isZero(){
-        return (numerator == 0);
+        return (coefficient < 0);
     }
 
     // 複製する
@@ -243,9 +242,9 @@ public class Term implements Cloneable{
         boolean flg = false;    // マイナスｎ乗の変数があるか
 
         if(variables.size() == 0){
-            tmp.append(numerator);
+            tmp.append(coefficient);
         } else {
-            switch(numerator) {
+            switch(coefficient) {
                 case -1:
                     // -1xは-xと表示する
                     tmp.append("-");
@@ -260,7 +259,7 @@ public class Term implements Cloneable{
                     return tmp.toString();
 
                 default:
-                    tmp.append(numerator);
+                    tmp.append(coefficient);
                     break;
             }
 
@@ -282,37 +281,7 @@ public class Term implements Cloneable{
 
         }
 
-        // 分母を出力する
-        if(denominator != 1 || flg) {
-            tmp.append("/");
-            if (denominator != 1) {
-                tmp.append(denominator);
-            }
-
-            if(flg) {
-                for (Variable var : variables) {
-                    if (var.getExponent() < -1) {
-                        // マイナスｎ乗の変数を出力
-                        tmp.append(var.getVariable());
-                        tmp.append("^");
-                        tmp.append(-var.getExponent());
-                    } else if (var.getExponent() == -1) {
-                        // マイナス1乗の変数は単に変数のみ出力
-                        tmp.append(var.getVariable());
-                    }
-                }
-            }
-        }
-
         return tmp.toString();
-    }
-
-    public int getDenominator(){
-        return denominator;
-    }
-
-    public int getNumerator(){
-        return numerator;
     }
 
     public ArrayList<Variable> getVariable(){

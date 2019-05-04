@@ -28,11 +28,6 @@ public class Manipulation {
         associativity.put("minus", "leftonly"); // 負数を表す
     }
 
-    // 与えた文字列を計算する（第二引数省略版）
-    public String calculate(String str){
-        return calculate(str, false);
-    }
-
     // 与えた文字列を計算する
     public String calculate(String str, boolean showDebug){
         if(showDebug) {
@@ -57,54 +52,54 @@ public class Manipulation {
     }
 
     // 逆ポーランド記法の配列を走査して計算する（スタック版）
-    private Polynomial calculate(ArrayList<String> rpn){
+    private Polynomial calculate(ArrayList<String> rpn) {
         ArrayDeque<Polynomial> stack = new ArrayDeque<>();
         String associativeValue;
         Polynomial left, right;
 
-        for(String token : rpn){
-            if(priority.containsKey(token)){
+        for (String token : rpn) {
+            if (priority.containsKey(token)) {
                 // 演算子ならば、スタックから取り出して計算する
                 associativeValue = associativity.get(token);
-                if(associativeValue.equals("leftonly")){
+                if (associativeValue.equals("leftonly")) {
                     // 左の項のみに働く演算子のとき
                     // スタックから1つ取り出して演算
                     left = stack.pop();
-                    switch(token){
+                    switch (token) {
                         case "!":
-                            stack.push(Calculate.factorial(left));
+                            stack.push(left.factorial());
                             break;
 
                         case "minus":
-                            stack.push(Calculate.signInversion(left));
+                            stack.push(left.signInversion());
                             break;
                     }
                 } else {
                     right = stack.pop();
                     left = stack.pop();
-                    switch(token){
+                    switch (token) {
                         case "+":
-                            stack.push(Calculate.addition(left, right));
+                            stack.push(left.addition(right));
                             break;
 
                         case "-":
-                            stack.push(Calculate.subtraction(left, right));
+                            stack.push(left.subtraction(right));
                             break;
 
                         case "*":
-                            stack.push(Calculate.multiplication(left, right));
+                            stack.push(left.multiplication(right));
                             break;
 
                         case "/":
-                            stack.push(Calculate.division(left, right));
+                            stack.push(left.division(right));
                             break;
 
                         case "^":
-                            stack.push(Calculate.power(left, right));
+                            stack.push(left.power(right));
                             break;
 
                         case "var*":
-                            stack.push(Calculate.multiplication(left, right));
+                            stack.push(left.multiplication(right));
                             break;
                     }
                 }
@@ -115,57 +110,6 @@ public class Manipulation {
         }
 
         return stack.pop();
-    }
-
-    // 構文木を走査して計算する
-    private Polynomial calculate(Tree tree){
-        // Pre-orderで走査しながら再帰的に計算する
-        if(tree.hasChildren()){
-            // 子を持っている場合
-            String operator = tree.getItem();
-            Polynomial left = calculate(tree.getLeft());
-            Polynomial right = calculate(tree.getRight());
-
-            // 演算子によって動作を変える
-            if(operator == null){
-                throw new NullPointerException();
-            } else switch(operator){
-                case "+":
-                    return Calculate.addition(left, right);
-
-                case "-":
-                    return Calculate.subtraction(left, right);
-
-                case "*":
-                    return Calculate.multiplication(left, right);
-
-                case "/":
-                    return Calculate.division(left, right);
-
-                case "^":
-                    return Calculate.power(left, right);
-
-                case "var*":
-                    return Calculate.multiplication(left, right);
-            }
-        } else if(tree.hasLeft()){
-            // 左の要素しか持っていない木
-            String operator = tree.getItem();
-            if(operator == null){
-                throw new NullPointerException();
-            } else switch(operator){
-                case "minus":
-                    return Calculate.signInversion(calculate(tree.getLeft()));
-
-                case "!":
-                    return Calculate.factorial(calculate(tree.getLeft()));
-            }
-        } else {
-            // 子を持っていない場合
-            return new Polynomial(tree.getItem());
-        }
-
-        throw new Error("木の構造が正しくないか認識できない演算子が含まれている可能性があります");
     }
 
     // 数式をトークンに分解する
@@ -310,33 +254,6 @@ public class Manipulation {
 
         return output;
     }
-
-    // 構文木を生成する
-    private Tree generateTree(ArrayList<String> rpn) {
-        Deque<Tree> stack = new ArrayDeque<>();
-
-        Tree a, b;
-        for(String s : rpn){
-            // cが演算子であるか
-            if(priority.containsKey(s) && !associativity.get(s).equals("leftonly")){
-                // 演算子の場合、スタックから2つ取り出し、それを左右に持つTreeインスタンスを生成
-                a = stack.pop();
-                b = stack.pop();
-                stack.push(new Tree(b, a, s));
-            } else if(associativity.containsKey(s)){
-                // 階乗など左側の項のみに対して働く演算子の場合、スタックから一個取り出して計算する
-                a = stack.pop();
-                stack.push(new Tree(a, s));
-            } else {
-                // 数値の場合、Treeインスタンスを作成しスタックに積む
-                stack.push(new Tree(s));
-            }
-        }
-
-        return stack.pop();
-    }
-
-
 
     // 配列の内容を先頭から順に出力
     private static void printArray(ArrayList<String> array){
