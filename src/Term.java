@@ -104,22 +104,15 @@ public class Term implements Cloneable{
         return new Term(coe, newvar);
     }
 
-    // 符号を反転させる
-    public Term inverse(){
-        // this.numerator = -this.numerator;
-        this.coefficient = -this.coefficient;
-        return this;
-    }
-
     // 0乗の変数を削除する
-    private void shortify() {
+    private void shorten() {
         // 0乗の変数を削除する
-        ArrayList<Variable> shortified = new ArrayList<>();
+        ArrayList<Variable> shortened = new ArrayList<>();
         for (Variable obj : variables) {
             if (obj.getExponent() != 0)
-                shortified.add(obj);
+                shortened.add(obj);
         }
-        variables = shortified;
+        variables = shortened;
     }
 
     // 変数を並び替える
@@ -148,10 +141,10 @@ public class Term implements Cloneable{
         }
     }
 
-    // Shortify, sortVariablesを全て行う
+    // shorten, sortVariablesを全て行う
     public void beautify(){
         sortVariables();
-        shortify();
+        shorten();
     }
 
     // 変数の数を返す
@@ -208,7 +201,6 @@ public class Term implements Cloneable{
 
     // この項が整数かどうか
     public boolean isInteger(){
-        // return (denominator == 1);
         return (variableSize() == 0);
     }
 
@@ -239,7 +231,6 @@ public class Term implements Cloneable{
     @Override
     public String toString(){
         StringBuilder tmp = new StringBuilder();
-        boolean flg = false;    // マイナスｎ乗の変数があるか
 
         if(variables.size() == 0){
             tmp.append(coefficient);
@@ -265,10 +256,7 @@ public class Term implements Cloneable{
 
             // この項が持つ指数が正の数の変数を順に出力する
             for(Variable var : variables) {
-                if (var.getExponent() < 0) {
-                    // マイナスｎ乗の変数があったら分母に出力するためフラグを立てる
-                    flg = true;
-                } else if (var.getExponent() != 1) {
+                if (var.getExponent() != 1) {
                     // 1乗以外の変数があったら分子に出力する
                     tmp.append(var.getVariable());
                     tmp.append("^");
