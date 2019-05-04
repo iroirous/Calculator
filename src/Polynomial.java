@@ -10,7 +10,6 @@ public class Polynomial implements Cloneable{
     }
 
     Polynomial(Term term){
-        // terms.add(term);
         numerator.add(term);
         denominator.add(new Term(1));
     }
@@ -119,7 +118,6 @@ public class Polynomial implements Cloneable{
                 outer : for(int j=0; j<vars.size(); j++) {
                     Variable varsv = vars.get(j);
                     // 変数が共通ならば指数を見る
-                    // for(Variable v : t.getVariable()){
                     for (int k = 0; k < t.getVariable().size(); k++) {
                         Variable v = t.getVariable(k);
                         if (v.variableEquals(varsv)) {
@@ -141,8 +139,12 @@ public class Polynomial implements Cloneable{
 
     // 約分する
     private void reduction(){
-        ArrayList<Integer> nums = new ArrayList<>();
+        // 変数を約分する
+        ArrayList<Variable> vars = getCommonVariables(numerator, new ArrayList<>(), true);
+        vars = getCommonVariables(denominator, vars, false);
+
         // 分子と分母の係数を配列に
+        ArrayList<Integer> nums = new ArrayList<>();
         for(Term t : numerator){
             if(t.getCoefficient() != 0) {
                 nums.add(t.getCoefficient());
@@ -154,24 +156,16 @@ public class Polynomial implements Cloneable{
             }
         }
         int gcd = Calculate.gcd(nums);
-        // 新しい係数を設定
+        // 新しい係数を設定しつつ、全ての項に共通する変数を取り除く
         for(Term t : numerator){
             t.setCoefficient(t.getCoefficient() / gcd);
+            for(Variable v : vars) {
+                t.setVariableExponent(v.getVariable(), t.getVariable(v.getVariable()).getExponent() - v.getExponent());
+            }
         }
         for(Term t : denominator){
             t.setCoefficient(t.getCoefficient() / gcd);
-        }
-
-        // 変数を約分する
-        ArrayList<Variable> vars = getCommonVariables(numerator, new ArrayList<>(), true);
-        vars = getCommonVariables(denominator, vars, false);
-
-        // 共通する変数を削除する
-        for(Variable v : vars){
-            for(Term t : numerator){
-                t.setVariableExponent(v.getVariable(), t.getVariable(v.getVariable()).getExponent() - v.getExponent());
-            }
-            for(Term t : denominator){
+            for(Variable v : vars) {
                 t.setVariableExponent(v.getVariable(), t.getVariable(v.getVariable()).getExponent() - v.getExponent());
             }
         }
@@ -211,36 +205,37 @@ public class Polynomial implements Cloneable{
     // 加算
     public Polynomial addition(Polynomial right){
         // 新たな分母を求める
-        ArrayList<Term> denom = Calculate.multiplication(getDenominator(), right.getDenominator());
-        ArrayList<Term> nume1 = Calculate.multiplication(getNumerator(), right.getDenominator());
-        ArrayList<Term> nume2 = Calculate.multiplication(right.getNumerator(), getDenominator());
-
-        return new Polynomial(Calculate.addition(nume1, nume2), denom);
+        this.numerator = Calculate.addition(
+                Calculate.multiplication(getNumerator(), right.getDenominator()),
+                Calculate.multiplication(right.getNumerator(), getDenominator())
+        );
+        this.denominator = Calculate.multiplication(getDenominator(), right.getDenominator());
+        return this;
     }
 
     // 減算
     public Polynomial subtraction(Polynomial right){
         // 新たな分母を求める
-        ArrayList<Term> denom = Calculate.multiplication(getDenominator(), right.getDenominator());
-        ArrayList<Term> nume1 = Calculate.multiplication(getNumerator(), right.getDenominator());
-        ArrayList<Term> nume2 = Calculate.multiplication(right.getNumerator(), getDenominator());
-
-        return new Polynomial(Calculate.subtraction(nume1, nume2), denom);
+        this.numerator = Calculate.subtraction(
+                Calculate.multiplication(getNumerator(), right.getDenominator()),
+                Calculate.multiplication(right.getNumerator(), getDenominator())
+        );
+        this.denominator = Calculate.multiplication(getDenominator(), right.getDenominator());
+        return this;
     }
 
 
     public Polynomial multiplication(Polynomial a){
-        ArrayList<Term> nume = Calculate.multiplication(this.numerator,  a.getNumerator());
-        ArrayList<Term> denom = Calculate.multiplication(this.denominator, a.getDenominator());
-        return new Polynomial(nume, denom);
+        this.numerator = Calculate.multiplication(this.numerator,  a.getNumerator());
+        this.denominator = Calculate.multiplication(this.denominator, a.getDenominator());
+        return this;
     }
 
     // 除算
     public Polynomial division(Polynomial a){
-        return new Polynomial(
-                Calculate.multiplication(numerator, a.denominator),
-                Calculate.multiplication(denominator, a.numerator)
-        );
+        this.numerator = Calculate.multiplication(numerator, a.denominator);
+        this.denominator = Calculate.multiplication(denominator, a.numerator);
+        return this;
     }
 
     // 階乗を求める

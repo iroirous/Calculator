@@ -21,66 +21,38 @@ public class Calculate {
     }
 
     private static ArrayList<Term> signInversion(ArrayList<Term> a){
-        ArrayList<Term> result = new ArrayList<>();
         for(Term term : a){
-            result.add(term.signInversion());
+            term.signInversion();
         }
-        return result;
+        return a;
     }
 
     public static ArrayList<Term> addition(ArrayList<Term> a, Term b){
-        ArrayList<Term> result = new ArrayList<>();
-
-        // aをresultにコピー
-        for(Term term : a){
-            result.add(term.clone());
+        if(a.size() == 0){
+            a.add(b);
+            return a;
         }
 
-        // resultが空ならbを追加して終わる
-        if(result.size() == 0){
-            result.add(b.clone());
-            return result;
-        }
-
-        // 同じ変数をもつtermが存在すれば加算して、なければ新たに追加する
-        for(int i=0; i<result.size(); i++){
-            if(result.get(i).variableEquals(b)){
-                result.get(i).setCoefficient(result.get(i).getCoefficient() + b.getCoefficient());
+        for(int i=0; i<a.size(); i++){
+            if(a.get(i).variableEquals(b)){
+                a.get(i).setCoefficient(a.get(i).getCoefficient() + b.getCoefficient());
                 break;
             }
 
             if(i == a.size()-1){
-                result.add(b.clone());
+                a.add(b);
                 break;
             }
         }
-
-        return result;
+        return a;
     }
 
     // 加算
     public static ArrayList<Term> addition(ArrayList<Term> a, ArrayList<Term> b){
-        ArrayList<Term> result = new ArrayList<>();
-
-        // thisのnumeratorをコピー
-        for(Term term : a){
-            result.add(term.clone());
+        for(Term term : b){
+            a = Calculate.addition(a, term);
         }
-
-        // 加算する
-        outer : for(Term termB : b) {
-            for (Term term : result) {
-                // 同じ変数ならば係数を変更
-                if (termB.variableEquals(term)) {
-                    term.setCoefficient(term.getCoefficient() + termB.getCoefficient());
-                    continue outer;
-                }
-            }
-
-            result.add(termB);
-        }
-
-        return result;
+        return a;
     }
 
     // 減算
