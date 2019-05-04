@@ -14,11 +14,6 @@ public class Polynomial implements Cloneable{
         denominator.add(new Term(1));
     }
 
-    Polynomial(ArrayList<Term> nume, ArrayList<Term> denom){
-        numerator = nume;
-        denominator = denom;
-    }
-
     public Polynomial beautify(){
         reduction();
         termBeautify();
