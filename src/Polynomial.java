@@ -9,29 +9,39 @@ public class Polynomial implements Cloneable{
         denominator.add(new Term(1));
     }
 
-    Polynomial(Term term){
-        numerator.add(term);
-        denominator.add(new Term(1));
+    Polynomial(ArrayList<Term> nume, ArrayList<Term> denom){
+        numerator = nume;
+        denominator = denom;
     }
 
     public Polynomial beautify(){
         reduction();
-        termBeautify();
         numerator = termSort(numerator);
         denominator = termSort(denominator);
+
+        // 分母の最初の項が負の値のとき、全ての項の符号を反転させる
+        if(denominator.get(0).isNegative()){
+            for(Term term : numerator){
+                term.signInversion();
+            }
+            for(Term term : denominator){
+                term.signInversion();
+            }
+        }
         return this;
     }
 
     // 項を降べきの順に並べ替える
     private ArrayList<Term> termSort(ArrayList<Term> terms){
         // コムソートにより並べ替える。計算時間はほぼO(nlogn)
+        int i;
         if(terms.size() > 1){
             int h = terms.size() * 10 / 13;
             Term a, b, tmp;
             char aVar, bVar;
             int aExp, bExp;
             while(true){
-                for(int i = 0; i + h < terms.size(); i++) {
+                for(i = 0; i + h < terms.size(); i++) {
                     a = terms.get(i);
                     b = terms.get(i + h);
 
@@ -71,35 +81,28 @@ public class Polynomial implements Cloneable{
             }
         }
 
+        // 係数が0の項を削除する
+        for(i = terms.size()-1; i>=0; i--){
+            if(terms.get(i).getCoefficient() == 0){
+                terms.remove(i);
+            } else {
+                break;
+            }
+        }
+
         return terms;
-    }
-
-    // 0乗の変数を削除し、同じ変数を持つ項をまとめる
-    private void termBeautify(){
-        ArrayList<Term> nume = new ArrayList<>();
-        ArrayList<Term> denom = new ArrayList<>();
-
-        for(Term t : numerator){
-            t.beautify();
-            nume = Calculate.addition(nume, t);
-        }
-        for(Term t : denominator){
-            t.beautify();
-            denom = Calculate.addition(denom, t);
-        }
-
-        numerator = nume;
-        denominator = denom;
     }
 
     // 各項で共通している変数とその指数を求める
     private ArrayList<Variable> getCommonVariables(ArrayList<Term> terms, ArrayList<Variable> now, boolean isNumerator){
         ArrayList<Variable> vars = now;
+        Term t;
+        Variable varsv, v;
         for(int i=0; i<terms.size(); i++){
-            Term t = terms.get(i);
+            t = terms.get(i);
             if(i == 0 && isNumerator){
-                for(Variable v : t.getVariable()){
-                    vars.add(v.clone());
+                for(Variable tv : t.getVariable()){
+                    vars.add(tv.clone());
                 }
             } else {
                 // 全ての項に共通していない変数を削除していく
@@ -111,10 +114,10 @@ public class Polynomial implements Cloneable{
                 }
 
                 outer : for(int j=0; j<vars.size(); j++) {
-                    Variable varsv = vars.get(j);
+                    varsv = vars.get(j);
                     // 変数が共通ならば指数を見る
                     for (int k = 0; k < t.getVariable().size(); k++) {
-                        Variable v = t.getVariable(k);
+                        v = t.getVariable(k);
                         if (v.variableEquals(varsv)) {
                             if (v.getExponent() <= varsv.getExponent()) {
                                 varsv.setExponent(v.getExponent());
@@ -141,28 +144,31 @@ public class Polynomial implements Cloneable{
         // 分子と分母の係数を配列に
         ArrayList<Integer> nums = new ArrayList<>();
         for(Term t : numerator){
-            if(t.getCoefficient() != 0) {
+            if(t.getCoefficient() != 0)
                 nums.add(t.getCoefficient());
-            }
         }
         for(Term t : denominator){
-            if(t.getCoefficient() != 0) {
+            if(t.getCoefficient() != 0)
                 nums.add(t.getCoefficient());
-            }
         }
         int gcd = Calculate.gcd(nums);
         // 新しい係数を設定しつつ、全ての項に共通する変数を取り除く
+        char c;
         for(Term t : numerator){
             t.setCoefficient(t.getCoefficient() / gcd);
             for(Variable v : vars) {
-                t.setVariableExponent(v.getVariable(), t.getVariable(v.getVariable()).getExponent() - v.getExponent());
+                c = v.getVariable();
+                t.setVariableExponent(c, t.getVariable(c).getExponent() - v.getExponent());
             }
+            t.beautify();   // 項をきれいにする
         }
         for(Term t : denominator){
             t.setCoefficient(t.getCoefficient() / gcd);
             for(Variable v : vars) {
-                t.setVariableExponent(v.getVariable(), t.getVariable(v.getVariable()).getExponent() - v.getExponent());
+                c = v.getVariable();
+                t.setVariableExponent(c, t.getVariable(c).getExponent() - v.getExponent());
             }
+            t.beautify();   // 項をきれいにする
         }
     }
 
@@ -191,7 +197,7 @@ public class Polynomial implements Cloneable{
 
     // 符号を反転する
     public Polynomial signInversion(){
-        for(Term t : this.getNumerator()){
+        for(Term t : numerator){
             t.signInversion();
         }
         return this;
@@ -201,8 +207,8 @@ public class Polynomial implements Cloneable{
     public Polynomial addition(Polynomial right){
         // 新たな分母を求める
         this.numerator = Calculate.addition(
-                Calculate.multiplication(getNumerator(), right.getDenominator()),
-                Calculate.multiplication(right.getNumerator(), getDenominator())
+                Calculate.multiplication(numerator, right.getDenominator()),
+                Calculate.multiplication(right.getNumerator(), denominator)
         );
         this.denominator = Calculate.multiplication(getDenominator(), right.getDenominator());
         return this;
@@ -212,8 +218,8 @@ public class Polynomial implements Cloneable{
     public Polynomial subtraction(Polynomial right){
         // 新たな分母を求める
         this.numerator = Calculate.subtraction(
-                Calculate.multiplication(getNumerator(), right.getDenominator()),
-                Calculate.multiplication(right.getNumerator(), getDenominator())
+                Calculate.multiplication(numerator, right.getDenominator()),
+                Calculate.multiplication(right.getNumerator(), denominator)
         );
         this.denominator = Calculate.multiplication(getDenominator(), right.getDenominator());
         return this;
@@ -221,8 +227,8 @@ public class Polynomial implements Cloneable{
 
 
     public Polynomial multiplication(Polynomial a){
-        this.numerator = Calculate.multiplication(this.numerator,  a.getNumerator());
-        this.denominator = Calculate.multiplication(this.denominator, a.getDenominator());
+        this.numerator = Calculate.multiplication(numerator,  a.getNumerator());
+        this.denominator = Calculate.multiplication(denominator, a.getDenominator());
         return this;
     }
 
@@ -238,8 +244,8 @@ public class Polynomial implements Cloneable{
         if(numerator.size() != 1 || !numerator.get(0).isInteger() || numerator.get(0).hasVariable()){
             throw new UnsupportedOperationException("正の整数以外の数値の階乗計算には対応していません");
         } else {
-            Term tmp = Calculate.factorial(numerator.get(0));
-            return new Polynomial(tmp);
+            numerator.set(0, Calculate.factorial(numerator.get(0)));
+            return this;
         }
     }
 
@@ -272,6 +278,10 @@ public class Polynomial implements Cloneable{
                     tmp.append('(');
                 }
             }
+        } else if(terms.isEmpty()) {
+            // 項がなければ0を出力
+            tmp.append("0");
+            return tmp;
         }
         if(!isThisNumerator) {
             // 分母が1のときは何も出力しない。1以外のとき除算記号を出力
@@ -281,18 +291,20 @@ public class Polynomial implements Cloneable{
                 tmp.append('/');
             }
         }
-        // 項を出力ｓいていく
+        // 項を出力していく
+        Term t;
         for(int i=0; i < terms.size(); i++){
+            t = terms.get(i);
             // 係数が0で変数を持つならば表示しない
-            if(terms.get(i).getCoefficient() == 0 && terms.get(i).hasVariable()){
+            if(t.getCoefficient() == 0 && t.hasVariable()){
                 continue;
             }
 
             // 負数でなければ＋を表示
-            if(!terms.get(i).isNegative() && i > 0){
+            if(!t.isNegative() && i > 0){
                 tmp.append('+');
             }
-            tmp.append(terms.get(i).toString());
+            tmp.append(t.toString());
         }
         // 閉じカッコを出力する
         if(terms.size() > 1){

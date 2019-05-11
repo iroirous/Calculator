@@ -25,12 +25,6 @@ public class Variable implements Cloneable{
 
     @Override
     public Variable clone(){
-        Variable ret = null;
-        try {
-            ret = (Variable) super.clone();
-        } catch(Exception e){
-            e.printStackTrace();
-        }
-        return ret;
+        return new Variable(var, exp);
     }
 }

@@ -106,29 +106,28 @@ public class Term implements Cloneable{
 
     // 0乗の変数を削除する
     private void shorten() {
-        // 0乗の変数を削除する
-        ArrayList<Variable> shortened = new ArrayList<>();
-        for (Variable obj : variables) {
-            if (obj.getExponent() != 0)
-                shortened.add(obj);
+        for(int i=0; i<variables.size(); i++){
+            if(variables.get(i).getExponent() == 0){
+                variables.remove(i);
+                i--;
+            }
         }
-        variables = shortened;
     }
 
     // 変数を並び替える
     private void sortVariables(){
         // コムソートによりソートする。計算時間はほぼO(nlogn)
         if(variables.size() > 1) {
-            int h = variables.size() * 10 / 13;
-            char a, b;
+            int h = variables.size() * 10 / 13, i;
+            Variable a, b, tmp;
             while (true) {
-                for (int i = 0; i + h < variables.size(); i++) {
-                    a = variables.get(i).getVariable();
-                    b = variables.get(i+h).getVariable();
+                for (i = 0; i + h < variables.size(); i++) {
+                    a = variables.get(i);
+                    b = variables.get(i+h);
 
-                    if (a > b) {
-                        Variable tmp = variables.get(i + h);
-                        variables.set(i + h, variables.get(i));
+                    if (a.getVariable() > b.getVariable()) {
+                        tmp = b;
+                        variables.set(i + h, a);
                         variables.set(i, tmp);
                     }
                 }
@@ -272,12 +271,8 @@ public class Term implements Cloneable{
         return tmp.toString();
     }
 
+    // 利用の際はシャローコピーであることに注意
     public ArrayList<Variable> getVariable(){
-        // ArrayListのcloneメソッドはシャローコピーなので手作業でディープコピー
-        ArrayList<Variable> tmp = new ArrayList<>();
-        for(Variable obj : variables){
-            tmp.add(obj.clone());
-        }
-        return tmp;
+        return variables;
     }
 }

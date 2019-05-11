@@ -65,7 +65,7 @@ public class Calculate {
         ArrayList<Term> result = new ArrayList<>();
         for(Term aTerm : a){
             for(Term bTerm : b) {
-                result.add(aTerm.multiplication(bTerm));
+                Calculate.addition(result, aTerm.multiplication(bTerm));
             }
         }
         return result;
@@ -82,7 +82,8 @@ public class Calculate {
             for(int i=a.getCoefficient()-1; i>1; i--){
                 fact *= i;
             }
-            return new Term(fact);
+            a.setCoefficient(fact);
+            return a;
         }
     }
 }
