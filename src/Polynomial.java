@@ -271,18 +271,6 @@ public class Polynomial implements Cloneable{
         StringBuilder tmp = new StringBuilder();
 
         // カッコを出力する
-        if(terms.size() > 1){
-            if(isThisNumerator){
-                // 分母が1以外かつ分子が複数項のときカッコを出力
-                if(!this.isDenominatorOne()) {
-                    tmp.append('(');
-                }
-            }
-        } else if(terms.isEmpty()) {
-            // 項がなければ0を出力
-            tmp.append("0");
-            return tmp;
-        }
         if(!isThisNumerator) {
             // 分母が1のときは何も出力しない。1以外のとき除算記号を出力
             if (terms.get(0).isInteger() && terms.get(0).getCoefficient() == 1) {
@@ -290,6 +278,20 @@ public class Polynomial implements Cloneable{
             } else {
                 tmp.append('/');
             }
+        }
+        if(terms.size() > 1){
+            if(isThisNumerator){
+                // 分母が1以外かつ分子が複数項のときカッコを出力
+                if(!this.isDenominatorOne()) {
+                    tmp.append('(');
+                }
+            } else {
+                tmp.append('(');
+            }
+        } else if(terms.isEmpty()) {
+            // 項がなければ0を出力
+            tmp.append("0");
+            return tmp;
         }
         // 項を出力していく
         Term t;

@@ -13,7 +13,7 @@ public class Manipulation {
         priority.put("minus", 30);  // 負数を表す
         priority.put("^", 40);
         priority.put("!", 50);
-        priority.put("var*", 25);  // 係数と変数を繋ぐ記号
+        priority.put("var*", 21);  // 係数と変数を繋ぐ記号
 
         // 各演算子の結合性をロードする
         associativity.put("(", "special");
@@ -219,18 +219,67 @@ public class Manipulation {
                 output.add(s);
             } else if(s.equals("(")){
                 // トークンが左括弧の場合
-                // 1つ前が演算子以外だったら「＊」をスタックに追加
 
-                // 左括弧の前が演算子以外だったら「＊」をスタックに追加（乗算とみなす）
-                if(i>0 && !associativity.containsKey(token.get(i-1))){
-                    stack.push("*");
+                // 「＊」より優先度の高い演算子をスタックに移動
+                if(!stack.isEmpty() && !associativity.containsKey(token.get(i-1))) {
+                    String tmp = stack.getFirst();
+                    while (true) {
+                        if (associativity.containsKey(tmp) && (!tmp.equals("*") && priority.get(tmp) > priority.get("*"))) {
+                            output.add(stack.pop());
+                            if(!stack.isEmpty()) {
+                                tmp = stack.getFirst();
+                            } else {
+                                break;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
                 }
 
+                // 左括弧の前が演算子以外もしくは右括弧だったら乗算記号をスタックに追加
+                if(i>0 && (token.get(i-1).equals(")") || !associativity.containsKey(token.get(i-1)))){
+                    stack.push("var*");
+                }
 
-                stack.push(s);
+                // 閉じカッコまで読んで、それらを逆ポーランド記法に変換した結果をoutputに追加
+                ArrayList<String> arg = new ArrayList<>();
+                int brackets = 1;
+                while(i < token.size()-1){
+                    i++;
+                    String tmp = token.get(i);
+
+                    // カッコの入れ子を考慮しながら、閉じカッコを探し出す
+                    if(tmp.equals("(")){
+                        brackets++;
+                        arg.add(tmp);
+                    } else if(tmp.equals(")")){
+                        brackets--;
+                        arg.add(tmp);
+                        if(brackets == 0){
+                            // 次の文字が演算子以外なら乗算記号をスタックに追加
+                            if(i<token.size()-1 && (!associativity.containsKey(token.get(i+1)))){
+                                stack.push("var*");
+                            }
+                            break;
+                        }
+                    } else {
+                        arg.add(tmp);
+                    }
+                }
+                arg = shuntingYard(arg);
+                for(String tmp : arg){
+                    output.add(tmp);
+                }
+
+                //stack.push(s);
             } else if(s.equals(")")){
                 // トークンが右括弧の場合
+
+
+
                 // 左括弧までスタックの中身をキューに追加し続ける
+                /*
                 String tmp = stack.pop();
 
                 while (!tmp.equals("(")) {
@@ -242,7 +291,7 @@ public class Manipulation {
                 if(i<token.size()-1 && (token.get(i+1).equals("(") || !associativity.containsKey(token.get(i+1)))){
                     stack.push("*");
                 }
-
+                */
                 // 左括弧は捨てる
             }
         }
