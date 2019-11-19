@@ -271,28 +271,8 @@ public class Manipulation {
                 for(String tmp : arg){
                     output.add(tmp);
                 }
-
-                //stack.push(s);
             } else if(s.equals(")")){
                 // トークンが右括弧の場合
-
-
-
-                // 左括弧までスタックの中身をキューに追加し続ける
-                /*
-                String tmp = stack.pop();
-
-                while (!tmp.equals("(")) {
-                    output.add(tmp);
-                    tmp = stack.pop();
-                }
-
-                // 右括弧の次が演算子以外もしくは左括弧だったら「＊」をスタックに追加（乗算とみなす）
-                if(i<token.size()-1 && (token.get(i+1).equals("(") || !associativity.containsKey(token.get(i+1)))){
-                    stack.push("*");
-                }
-                */
-                // 左括弧は捨てる
             }
         }
 
